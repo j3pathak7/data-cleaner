@@ -1,7 +1,8 @@
 from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 import pandas as pd
 from io import StringIO
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
@@ -50,14 +51,21 @@ async def upload_file(file: UploadFile = File(...)):
                     ).abs() > threshold * df[numerical_columns].std()
         num_outliers = int(outliers.any(axis=1).sum())
 
-        return {
+        # Serialize the head of the DataFrame to JSON
+        df_head_json = df.head().to_json(orient='records')
+
+        # Return the statistics and the head of the DataFrame as a JSON response
+        return JSONResponse(content={
             "success": True,
             "message": "File uploaded successfully",
-            "num_rows": num_rows,
-            "num_columns": num_columns,
-            "total_missing_values": total_missing_values,
-            "num_duplicates": num_duplicates,
-            "num_outliers": num_outliers
-        }
+            "statistics": {
+                "num_rows": num_rows,
+                "num_columns": num_columns,
+                "total_missing_values": total_missing_values,
+                "num_duplicates": num_duplicates,
+                "num_outliers": num_outliers
+            },
+            "head": df_head_json
+        })
     except Exception as e:
         return {"success": False, "message": str(e)}
