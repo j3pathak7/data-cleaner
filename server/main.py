@@ -7,8 +7,8 @@ app = FastAPI()
 
 # Configure CORS
 origins = [
-    "http://localhost:3000",  # Add the origin URLs you want to allow
-    # You can add more origins if needed
+    "http://localhost:3000",
+    "https://data-cleaner.vercel.app",
 ]
 
 app.add_middleware(
