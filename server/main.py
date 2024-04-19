@@ -32,28 +32,32 @@ async def upload_file(file: UploadFile = File(...)):
         csv_data = await file.read()
         df = pd.read_csv(StringIO(csv_data.decode('latin-1')), engine='python')
 
-        # Find the number of empty values
-        empty_value_counts = get_empty_value_counts(df)
-
-        # Additional database information
+        # Get the number of rows and columns
         num_rows = len(df)
         num_columns = len(df.columns)
-        column_names = df.columns.tolist()
+
+        # Count the total number of missing values
+        total_missing_values = int(df.isnull().sum().sum())
+
+        # Count the number of duplicate rows
+        num_duplicates = int(df.duplicated().sum())
+
+        # Define your criteria for outliers and count them
+        # For example, let's say an outlier is a row where any numerical value is more than 3 standard deviations from the mean
+        threshold = 3
+        numerical_columns = df.select_dtypes(include=['number']).columns
+        outliers = (df[numerical_columns] - df[numerical_columns].mean()
+                    ).abs() > threshold * df[numerical_columns].std()
+        num_outliers = int(outliers.any(axis=1).sum())
 
         return {
             "success": True,
             "message": "File uploaded successfully",
-            "empty_value_counts": empty_value_counts,
             "num_rows": num_rows,
             "num_columns": num_columns,
-            "column_names": column_names
+            "total_missing_values": total_missing_values,
+            "num_duplicates": num_duplicates,
+            "num_outliers": num_outliers
         }
     except Exception as e:
         return {"success": False, "message": str(e)}
-
-
-def get_empty_value_counts(df):
-    # Count the number of empty values for each column
-    empty_value_counts = df.isnull().sum().to_dict()
-
-    return empty_value_counts
