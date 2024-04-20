@@ -75,6 +75,7 @@ async def clean_data(
     file: bytes = File(...),
     missingValueStrategy: str = "ignore",
     outlierStrategy: str = "ignore",
+    duplicateStrategy: str = "ignore",
 ):
     try:
         # Read the uploaded CSV file
@@ -90,6 +91,10 @@ async def clean_data(
         # Apply the chosen missing value strategy or return the original DataFrame
         cleaned_df = strategy_mapping.get(
             missingValueStrategy, lambda df: df)(df)
+
+        # Handle duplicates based on the chosen strategy
+        if duplicateStrategy == "drop":
+            cleaned_df = cleaned_df.drop_duplicates()
 
         # Handle outliers based on the chosen strategy
         if outlierStrategy == "drop":
