@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import pandas as pd
@@ -67,5 +67,31 @@ async def upload_file(file: UploadFile = File(...)):
             },
             "head": df_head_json
         })
+    except Exception as e:
+        return {"success": False, "message": str(e)}
+
+
+@app.post("/clean")
+async def clean_data(file: bytes = File(...), missing_value_strategy: str = None):
+    try:
+        # Read the uploaded CSV file
+        df = pd.read_csv(StringIO(file.decode('latin-1')))
+
+        # Apply the chosen missing value strategy if provided
+        if missing_value_strategy:
+            if missing_value_strategy == "drop":
+                df = df.dropna()
+            elif missing_value_strategy == "fill":
+                df = df.fillna(method='ffill', inplace=True)  # Forward fill
+                # Fill remaining NaNs with 0 (or any other value)
+                df = df.fillna(value=0)
+            elif missing_value_strategy == "interpolate":
+                df = df.interpolate(method='linear')  # Linear interpolation
+            else:
+                return {"success": False, "message": "Invalid missing value strategy"}
+
+        # Convert the cleaned DataFrame back to CSV format
+        cleaned_csv = df.to_csv(index=False)
+        return Response(content=cleaned_csv, media_type="text/csv", headers={"Content-Disposition": "attachment; filename=cleaned_data.csv"})
     except Exception as e:
         return {"success": False, "message": str(e)}
