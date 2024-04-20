@@ -11,7 +11,6 @@ origins = [
     "http://localhost:3000",
     "https://data-cleaner.vercel.app",
 ]
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -71,10 +70,12 @@ async def upload_file(file: UploadFile = File(...)):
         return {"success": False, "message": str(e)}
 
 
-# ... (other imports and code)
-
 @app.post("/clean")
-async def clean_data(file: bytes = File(...), missingValueStrategy: str = "ignore"):
+async def clean_data(
+    file: bytes = File(...),
+    missingValueStrategy: str = "ignore",
+    outlierStrategy: str = "ignore",
+):
     try:
         # Read the uploaded CSV file
         df = pd.read_csv(StringIO(file.decode('latin-1')))
@@ -88,8 +89,31 @@ async def clean_data(file: bytes = File(...), missingValueStrategy: str = "ignor
 
         # Apply the chosen missing value strategy or return the original DataFrame
         cleaned_df = strategy_mapping.get(
-            # Renamed to match the frontend
             missingValueStrategy, lambda df: df)(df)
+
+        # Handle outliers based on the chosen strategy
+        if outlierStrategy == "drop":
+            # Define your criteria for outliers and drop them
+            # For example, let's say an outlier is a row where any numerical value is more than 3 standard deviations from the mean
+            threshold = 3
+            numerical_columns = cleaned_df.select_dtypes(
+                include=['number']).columns
+            outliers = (cleaned_df[numerical_columns] - cleaned_df[numerical_columns].mean(
+            )).abs() > threshold * cleaned_df[numerical_columns].std()
+            cleaned_df = cleaned_df[~outliers.any(axis=1)]
+
+        elif outlierStrategy == "winsorize":
+            # Winsorize outliers to a specified percentile
+            winsorize_percentile = 0.95  # Set the desired percentile
+            numerical_columns = cleaned_df.select_dtypes(
+                include=['number']).columns
+            for column in numerical_columns:
+                lower_limit, upper_limit = cleaned_df[column].quantile(
+                    [winsorize_percentile, 1 - winsorize_percentile])
+                cleaned_df.loc[cleaned_df[column] <
+                               lower_limit, column] = lower_limit
+                cleaned_df.loc[cleaned_df[column] >
+                               upper_limit, column] = upper_limit
 
         # Convert the cleaned DataFrame back to CSV format
         cleaned_csv = cleaned_df.to_csv(index=False)

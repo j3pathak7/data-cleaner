@@ -5,6 +5,7 @@ const Hero = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [response, setResponse] = useState(null);
   const [missingValueStrategy, setMissingValueStrategy] = useState("ignore");
+  const [outlierStrategy, setOutlierStrategy] = useState("ignore");
 
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
@@ -12,6 +13,10 @@ const Hero = () => {
 
   const handleMissingValueStrategyChange = (e) => {
     setMissingValueStrategy(e.target.value);
+  };
+
+  const handleOutlierStrategyChange = (e) => {
+    setOutlierStrategy(e.target.value);
   };
 
   const handleSubmit = async (e) => {
@@ -41,7 +46,7 @@ const Hero = () => {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/clean?missingValueStrategy=${missingValueStrategy}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/clean?missingValueStrategy=${missingValueStrategy}&outlierStrategy=${outlierStrategy}`,
         {
           method: "POST",
           body: formData,
@@ -77,24 +82,44 @@ const Hero = () => {
           onChange={handleFileChange}
           className="bg-white text-blue-500 font-semibold py-2 px-4 rounded-lg shadow-md cursor-pointer w-full md:w-auto mb-4 md:mb-6 lg:mb-8 mx-auto"
         />
-        <div className="mb-4 md:mb-6 lg:mb-8 mx-auto">
-          <label
-            className="block text-sm font-semibold mb-2"
-            htmlFor="missingValueStrategy"
-          >
-            Missing Value Strategy:
-          </label>
-          <select
-            id="missingValueStrategy"
-            value={missingValueStrategy}
-            onChange={handleMissingValueStrategyChange}
-            className="bg-white text-blue-500 font-semibold py-2 px-4 rounded-lg shadow-md cursor-pointer"
-          >
-            <option value="ignore">Ignore</option>
-            <option value="drop">Drop</option>
-            <option value="fill">Fill</option>
-            <option value="interpolate">Interpolate</option>
-          </select>
+        <div className="mb-4 md:mb-6 lg:mb-8 mx-auto flex gap-8 justify-center">
+          <div>
+            <label
+              className="block text-sm font-semibold mb-2"
+              htmlFor="missingValueStrategy"
+            >
+              Missing Value Strategy:
+            </label>
+            <select
+              id="missingValueStrategy"
+              value={missingValueStrategy}
+              onChange={handleMissingValueStrategyChange}
+              className="bg-white text-blue-500 font-semibold py-2 px-4 rounded-lg shadow-md cursor-pointer"
+            >
+              <option value="ignore">Ignore</option>
+              <option value="drop">Drop</option>
+              <option value="fill">Fill</option>
+              <option value="interpolate">Interpolate</option>
+            </select>
+          </div>
+          <div className="">
+            <label
+              className="block text-sm font-semibold mb-2"
+              htmlFor="outlierStrategy"
+            >
+              Outlier Strategy:
+            </label>
+            <select
+              id="outlierStrategy"
+              value={outlierStrategy}
+              onChange={handleOutlierStrategyChange}
+              className="bg-white text-blue-500 font-semibold py-2 px-4 rounded-lg shadow-md cursor-pointer"
+            >
+              <option value="ignore">Ignore</option>
+              <option value="drop">Drop</option>
+              <option value="winsorize">Winsorize</option>
+            </select>
+          </div>
         </div>
         <button
           onClick={handleSubmit}
