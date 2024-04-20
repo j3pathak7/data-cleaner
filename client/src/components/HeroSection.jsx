@@ -138,11 +138,10 @@ const Hero = () => {
 
       {response && (
         <div className="mt-6 mx-8 md:mx-16">
-          <h2 className="text-center text-xl font-semibold mb-2">Response</h2>
+          <h2 className="text-center text-xl font-semibold mb-2">Summary</h2>
           <pre className="whitespace-pre-wrap">
             {response.success ? (
               <>
-                <p className="font-semibold">Message: {response.message}</p>
                 <p className="font-semibold">Statistics:</p>
                 <ul>
                   <li>Number of rows: {response.statistics.num_rows}</li>
