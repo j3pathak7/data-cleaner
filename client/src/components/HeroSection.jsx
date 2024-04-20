@@ -5,7 +5,6 @@ const Hero = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [response, setResponse] = useState(null);
   const [missingValueStrategy, setMissingValueStrategy] = useState("ignore");
-  const [showPopup, setShowPopup] = useState(false); // State to control popup visibility
 
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
@@ -20,7 +19,6 @@ const Hero = () => {
 
     const formData = new FormData();
     formData.append("file", selectedFile);
-    formData.append("missingValueStrategy", missingValueStrategy);
 
     try {
       const response = await fetch(
@@ -40,36 +38,15 @@ const Hero = () => {
   const handleClean = async () => {
     const formData = new FormData();
     formData.append("file", selectedFile);
-    formData.append("missingValueStrategy", missingValueStrategy);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clean`, {
-        method: "POST",
-        body: formData,
-      });
-
-      // Show the popup if data cleaning is successful
-      if (response.ok) {
-        setShowPopup(true);
-      } else {
-        console.error("Data cleaning failed.");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
-
-  const handleDownloadCleanedData = async () => {
-    // Download the cleaned CSV file
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-    formData.append("missingValueStrategy", missingValueStrategy);
-
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clean`, {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/clean?missingValueStrategy=${missingValueStrategy}`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (response.ok) {
         const blob = await response.blob();
@@ -86,7 +63,6 @@ const Hero = () => {
     } catch (error) {
       console.error("Error:", error);
     }
-    setShowPopup(false);
   };
 
   return (
@@ -120,6 +96,7 @@ const Hero = () => {
             <option value="interpolate">Interpolate</option>
           </select>
         </div>
+        <div>{missingValueStrategy}</div>
         <button
           onClick={handleSubmit}
           className="bg-yellow-500 m-4 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-yellow-600 transition duration-300"
@@ -131,7 +108,7 @@ const Hero = () => {
           className="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 transition duration-300 mt-4"
           disabled={!selectedFile} // Disable button if no file is selected
         >
-          Clean
+          Clean & Download
         </button>
       </div>
 
@@ -162,23 +139,6 @@ const Hero = () => {
               <p className="font-semibold">Error: {response.message}</p>
             )}
           </pre>
-        </div>
-      )}
-
-      {/* Popup component */}
-      {showPopup && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
-          <div className="bg-white p-8 rounded-lg shadow-md">
-            <p className="text-lg font-semibold mb-4">
-              Your data has been cleaned.
-            </p>
-            <button
-              onClick={handleDownloadCleanedData}
-              className="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 transition duration-300"
-            >
-              Download Cleaned Data
-            </button>
-          </div>
         </div>
       )}
     </div>

@@ -1,12 +1,11 @@
-"use client";
 import React, { useState } from "react";
-import DownloadPopup from "./DownloadPopup";
+import Popup from "./Popup";
 
 const Hero = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [response, setResponse] = useState(null);
   const [missingValueStrategy, setMissingValueStrategy] = useState("drop");
-  const [showDownloadPopup, setShowDownloadPopup] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
 
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
@@ -50,7 +49,7 @@ const Hero = () => {
       });
 
       if (response.ok) {
-        setShowDownloadPopup(true);
+        setShowPopup(true);
       } else {
         console.error("Data cleaning failed.");
       }
@@ -163,10 +162,8 @@ const Hero = () => {
         </div>
       )}
 
-      {/* DownloadPopup component */}
-      {showDownloadPopup && (
-        <DownloadPopup onDownload={handleDownloadCleanedData} />
-      )}
+      {/* Popup component */}
+      {showPopup && <Popup onDownload={handleDownloadCleanedData} />}
     </div>
   );
 };
