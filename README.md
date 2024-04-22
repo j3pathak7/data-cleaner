@@ -1,4 +1,6 @@
-*Data Cleaner
+**Data Cleaning App**
+
+---
 
 **Overview:**
 This project is a data cleaning application built to streamline the process of cleaning and preparing data for analysis or further use. Users can easily upload their data through the frontend interface and utilize various backend methods to perform cleaning operations.
